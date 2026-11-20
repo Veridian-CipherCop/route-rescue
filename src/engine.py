@@ -14,6 +14,7 @@ import pandas as pd
 # ----------------------------------------------------------------------
 BAND_CUTS = {"amber": 0.5, "orange": 0.75, "red": 1.0}
 CREW_BUFFER_MIN = 60
+MIN_TRIGGER_MM = 20
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 SUBWAYS_PATH = DATA_DIR / "subway_list.csv"
@@ -139,6 +140,9 @@ def get_triggers(exclude_event: Optional[str] = None) -> pd.DataFrame:
     fallback_val = round(1.25 * median_trigger, 1)
 
     triggers_df["trigger"] = triggers_df["trigger"].fillna(fallback_val).round(1)
+
+    # floor because reanalysis/historical rain underestimates some events (e.g. Dec 2021)
+    triggers_df["trigger"] = triggers_df["trigger"].apply(lambda x: max(float(x), float(MIN_TRIGGER_MM))).round(1)
     return triggers_df
 
 

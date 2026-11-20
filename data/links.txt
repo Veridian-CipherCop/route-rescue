@@ -1,0 +1,17 @@
+# Open-Meteo API Endpoints
+Forecast API: https://api.open-meteo.com/v1/forecast
+Historical Forecast API: https://historical-forecast-api.open-meteo.com/v1/forecast
+Historical Archive API: https://archive-api.open-meteo.com/v1/archive
+
+# Historical Storm Event Closure Source URLs
+E2021 (2021-12-30):
+https://www.thenewsminute.com/tamil-nadu/subways-closed-chennai-due-water-logging-traffic-moving-slowly-159328
+
+E2023 (Michaung, 2023-12-04):
+https://www.thenewsminute.com/tamil-nadu/chennai-floods-traffic-subways-and-train-updates-for-dec-6
+
+E2024A (2024-10-15):
+https://thenewsminute.com/tamil-nadu/live-blog-chennai-rains-intensify-meenambakkam-records-50-mm-of-rainfall
+
+E2024B (Fengal, 2024-11-30):
+https://www.latestly.com/india/news/cyclone-fengal-update-tamil-nadu-deploys-16-disaster-relief-teams-in-many-districts-affected-by-cyclonic-storm-6456784.html

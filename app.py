@@ -5,7 +5,9 @@ Evaluates subway flood risk from 12-hour rainfall forecasts and outputs
 operational action sheets, barricade times, and dewatering pump priorities.
 """
 
+import base64
 from pathlib import Path
+import random
 import folium
 import pandas as pd
 import streamlit as st
@@ -16,7 +18,7 @@ from src.rain import get_forecast
 from src.replay import EVENT_OPTIONS, evaluate_event
 
 # ----------------------------------------------------------------------
-# Page Setup
+# Page Setup & Styling
 # ----------------------------------------------------------------------
 st.set_page_config(
     page_title="Flood-to-Action Engine | Chennai Traffic Police",
@@ -24,23 +26,233 @@ st.set_page_config(
     layout="wide",
 )
 
+# Background styling from assets/img.png (graceful fallback if missing)
+img_path = Path(__file__).resolve().parent / "assets" / "img.png"
+if img_path.exists():
+    with open(img_path, "rb") as f:
+        img_b64 = base64.b64encode(f.read()).decode("utf-8")
+    bg_style = f"""
+    background-image: linear-gradient(rgba(5, 10, 20, 0.25), rgba(5, 10, 20, 0.25)), url("data:image/png;base64,{img_b64}");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    """
+else:
+    bg_style = "background-color: #080c14;"
+
+# Generate ~80 pure CSS rain drops with random inline positions & timing
+drops_html = []
+random.seed(42)  # Stable positions across reruns
+for _ in range(80):
+    left = random.randint(0, 100)
+    delay = round(random.uniform(0.0, 5.0), 2)
+    duration = round(random.uniform(0.6, 1.2), 2)
+    height = random.randint(25, 60)
+    opacity = round(random.uniform(0.25, 0.60), 2)
+    drops_html.append(
+        f'<div class="drop" style="left:{left}%; animation-delay:{delay}s; animation-duration:{duration}s; height:{height}px; opacity:{opacity};"></div>'
+    )
+rain_html = f'<div class="rain">{"".join(drops_html)}</div>'
+
+custom_css = f"""
+<style>
+/* Full page background with light overlay */
+.stApp {{
+    {bg_style}
+}}
+
+/* Transparent header */
+header[data-testid="stHeader"] {{
+    background: transparent !important;
+}}
+
+/* Remove big dark panel behind the whole page */
+.block-container,
+[data-testid="stAppViewContainer"],
+[data-testid="stMain"],
+.main {{
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: none !important;
+    box-shadow: none !important;
+}}
+
+/* Sidebar: official government console look */
+section[data-testid="stSidebar"],
+[data-testid="stSidebar"] > div:first-child {{
+    background: linear-gradient(180deg, rgba(11, 37, 69, 0.92), rgba(19, 49, 92, 0.88)) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    border-right: 3px solid #FF9933 !important;
+}}
+
+/* Sidebar glass cards */
+.sidebar-glass-card-title {{
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    letter-spacing: 1.2px !important;
+    color: #FF9933 !important;
+    text-transform: uppercase !important;
+    margin-bottom: 8px !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8) !important;
+}}
+
+section[data-testid="stSidebar"] div[data-testid="stVerticalBlockBorderWrapper"] {{
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+    border-radius: 14px !important;
+    padding: 14px !important;
+    margin-bottom: 14px !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18) !important;
+}}
+
+/* Saffron accent for inputs */
+div[data-testid="stSlider"] div[data-baseweb="slider"] div[role="slider"] {{
+    background-color: #FF9933 !important;
+    border-color: #FF9933 !important;
+    box-shadow: 0 0 10px rgba(255, 153, 51, 0.6) !important;
+}}
+div[data-testid="stRadio"] [role="radio"][aria-checked="true"] {{
+    background-color: #FF9933 !important;
+    border-color: #FF9933 !important;
+}}
+div[data-testid="stCheckbox"] input:checked + div {{
+    background-color: #FF9933 !important;
+    border-color: #FF9933 !important;
+}}
+
+/* Sidebar labels */
+section[data-testid="stSidebar"] label,
+section[data-testid="stSidebar"] label p,
+section[data-testid="stSidebar"] div[data-testid="stWidgetLabel"] p {{
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    font-size: 13px !important;
+    letter-spacing: 0.5px !important;
+}}
+
+/* General text readability over photo */
+h1, h2, h3, h4, h5, h6, p, span, label, div {{
+    color: #ffffff;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+}}
+
+/* Remove any background color/highlight on title, subtitle, and metric labels */
+h1, h2, h3, h4, .stCaption, small,
+div[data-testid="stMetricLabel"],
+div[data-testid="stMetricValue"],
+div[data-testid="stMetricDelta"] {{
+    background: transparent !important;
+    background-color: transparent !important;
+}}
+
+/* Small widgets get semi-transparent dark card */
+div[data-testid="stMetric"] {{
+    background: rgba(8, 12, 20, 0.55) !important;
+    backdrop-filter: blur(4px) !important;
+    -webkit-backdrop-filter: blur(4px) !important;
+    border-radius: 12px !important;
+    padding: 12px 16px !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+}}
+
+div[data-testid="stDataFrame"] {{
+    background: rgba(8, 12, 20, 0.55) !important;
+    backdrop-filter: blur(4px) !important;
+    -webkit-backdrop-filter: blur(4px) !important;
+    border-radius: 12px !important;
+    padding: 8px !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}}
+
+div[data-testid="stAlert"] {{
+    background: rgba(8, 12, 20, 0.55) !important;
+    backdrop-filter: blur(4px) !important;
+    -webkit-backdrop-filter: blur(4px) !important;
+    border-radius: 12px !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+}}
+
+div[data-baseweb="tab-list"] {{
+    background: rgba(8, 12, 20, 0.55) !important;
+    backdrop-filter: blur(4px) !important;
+    -webkit-backdrop-filter: blur(4px) !important;
+    border-radius: 12px !important;
+    padding: 4px 8px !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}}
+
+button[data-baseweb="tab"] {{
+    color: #e2e8f0 !important;
+    background: transparent !important;
+}}
+button[data-baseweb="tab"][aria-selected="true"] {{
+    color: #FF9933 !important;
+    border-bottom-color: #FF9933 !important;
+}}
+
+/* Falling rain animation (pointer-events: none ensures non-blocking clicks) */
+.rain {{
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 999;
+    overflow: hidden;
+}}
+
+.drop {{
+    position: absolute;
+    top: -80px;
+    width: 2px;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(190, 220, 255, 0.8));
+    border-radius: 2px;
+    animation: fall linear infinite;
+}}
+
+@keyframes fall {{
+    to {{
+        transform: translateY(110vh);
+    }}
+}}
+</style>
+"""
+
+st.markdown(custom_css + rain_html, unsafe_allow_html=True)
+
 st.title("🚨 Flood-to-Action Engine")
-st.caption("Tactical Decision Support for Chennai Traffic Police & Greater Chennai Corporation")
+st.caption("Chennai subway flood risk, ranked police action sheet")
 
 # ----------------------------------------------------------------------
-# Sidebar Controls
+# Sidebar Controls (Control Room Console)
 # ----------------------------------------------------------------------
-st.sidebar.header("🕹️ Operation Controls")
+st.sidebar.markdown("""
+<div style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); border-radius: 14px; padding: 14px; margin-bottom: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.25);">
+    <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 22px;">🛡️ 🚨</span>
+        <span style="font-size: 16px; font-weight: 800; letter-spacing: 1.5px; color: #ffffff;">CONTROL ROOM</span>
+    </div>
+    <div style="font-size: 11px; color: #e2e8f0; margin-top: 4px; font-weight: 500;">Greater Chennai Traffic Police - Advisory Console</div>
+    <div style="height: 2px; background: #FF9933; margin-top: 10px; border-radius: 2px;"></div>
+</div>
+""", unsafe_allow_html=True)
 
-mode = st.sidebar.radio("Mode", ["Live", "Replay"])
-horizon_h = st.sidebar.slider("Forecast Horizon (Hours)", min_value=1, max_value=12, value=12, step=1)
-multiplier = st.sidebar.slider("Rain Multiplier", min_value=0.5, max_value=2.0, value=1.0, step=0.1)
+with st.sidebar.container(border=True):
+    st.markdown('<div class="sidebar-glass-card-title">DATA MODE</div>', unsafe_allow_html=True)
+    mode = st.radio("Mode", ["Live", "Replay"], label_visibility="collapsed")
 
-demo_storm = st.sidebar.checkbox(
-    "🌧️ Demo Storm (Synthetic Heavy Rain)",
-    value=False,
-    help="Injects 12h heavy rain storm series so demo functions even on dry days.",
-)
+with st.sidebar.container(border=True):
+    st.markdown('<div class="sidebar-glass-card-title">FORECAST SETTINGS</div>', unsafe_allow_html=True)
+    horizon_h = st.slider("Forecast Horizon (Hours)", min_value=1, max_value=12, value=12, step=1)
+    multiplier = st.slider("Rain Multiplier", min_value=0.5, max_value=2.0, value=1.0, step=0.1)
+
+with st.sidebar.container(border=True):
+    st.markdown('<div class="sidebar-glass-card-title">SIMULATION</div>', unsafe_allow_html=True)
+    demo_storm = st.checkbox(
+        "🌧️ Demo Storm (Synthetic Heavy Rain)",
+        value=False,
+        help="Injects 12h heavy rain storm series so demo functions even on dry days.",
+    )
 
 # ----------------------------------------------------------------------
 # Data Loading & Forecast Preparation
@@ -62,8 +274,19 @@ if demo_storm:
     st.sidebar.warning("⚡ Demo Storm active: synthetic 12h rain injected.")
 else:
     rain_df, is_cached = get_forecast()
-    if is_cached:
-        st.sidebar.info("ℹ️ Using cached forecast")
+
+# Status chip at bottom of sidebar
+status_dot = "🟡" if is_cached else "🟢"
+status_text = "CACHED DATA" if is_cached else "LIVE FEED"
+status_color = "#f59e0b" if is_cached else "#10b981"
+
+st.sidebar.markdown(f"""
+<div style="margin-top: 18px; padding: 8px 14px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); border-radius: 20px; display: inline-flex; align-items: center; gap: 8px;">
+    <span style="font-size: 11px;">{status_dot}</span>
+    <span style="font-weight: 800; font-size: 11px; letter-spacing: 1px; color: {status_color};">{status_text}</span>
+</div>
+<div style="margin-top: 8px; font-size: 11px; color: #94a3b8; font-weight: 500;">Weather data by Open-Meteo.com</div>
+""", unsafe_allow_html=True)
 
 # Score subways
 scored_df = score(rain_df, triggers, horizon_h=horizon_h, multiplier=multiplier)
