@@ -1,0 +1,23 @@
+id,name,alt_names,lat,lon,divert_note,maintained_by,source_note
+1,Madley Subway,Madley Rd - Easwaran Koil St (south of Mambalam station),13.0352725,80.2275495,,GCC,GCC Bridges dept list (RUB 12)
+2,Duraisamy Subway,Dheeran Sivalingam Subway; Doraisamy Rd - Brindavan Rd,13.0416,80.2294,,GCC,GCC Bridges dept list (RUB 11)
+3,Aranganathan Subway,Thyagi Aranganathan; Kannammapet - Reddikuppam Rd,13.0282195,80.2252655,,GCC,GCC Bridges dept list (RUB 13)
+4,Rangarajapuram Subway,Pedestrian-cum-two-wheeler subway at level crossing,13.0532,80.2248,,GCC,GCC Bridges dept list (RUB 16)
+5,Gengu Reddy Subway,Gengureddy; Egmore near Nehru Park,13.0775919,80.2518739,,GCC,GCC Bridges dept list (RUB 5)
+6,Ganesapuram Subway,Ganeshapuram; Dr Ambedkar College Rd east of Vyasarpadi Jeeva stn,13.1098,80.2642,,GCC,GCC Bridges dept list (RUB 1)
+7,Perambur Subway,Sembium; Perambur High Rd,13.1074785,80.2422402,,GCC,GCC Bridges dept list (RUB 7)
+8,Villivakkam Subway,Redhills Rd at Villivakkam LC-2,13.1102,80.2081,,GCC,GCC Bridges dept list (RUB 8)
+9,Vyasarpadi Subway,,13.1065,80.2612,,UNVERIFIED (likely Highways),Not in GCC list; named in news closure lists
+10,Manickam Nagar Subway,,13.1147,80.2583,,GCC,GCC Bridges dept list (RUB 6)
+11,Thillai Ganga Nagar Subway,Nanganallur,12.9801242,80.1849020,,UNVERIFIED (likely Highways),Not in GCC list; named in news closure lists
+12,Pazhavanthangal Subway,Palavanthangal; GST Rd,12.9893388,80.1852411,,UNVERIFIED (likely Highways),Not in GCC list; named in news closure lists
+13,RBI Subway,Reserve Bank Subway; Rajaji Salai,13.0838081,80.2892534,,GCC,GCC Bridges dept list (RUB 4)
+14,Jones Road Subway,C.P. Pavalavannan Bridge; Saidapet,13.0204,80.2223,,GCC,GCC Bridges dept list (RUB 15)
+15,Mount Subway,,12.9952690,80.2011901,,UNVERIFIED (likely Highways),Not in GCC list; named in GCC 2021 safe list
+16,Harrington Road Subway,Harington; near Pachaiyappa's College,13.0716,80.2372,,GCC,GCC Bridges dept list (RUB 10)
+17,MC Road Subway,Monegar Choultry Rd near Stanley Hospital,13.1077,80.2869,,GCC,GCC Bridges dept list (RUB 2)
+18,Stanley Nagar Subway,Subway 1 and 2 on Cochrane Basin Bridge Rd,13.1130,80.2831,,GCC,GCC Bridges dept list (RUB 3)
+19,Nungambakkam Subway,Near Nungambakkam railway station,13.0663612,80.2320457,,GCC,GCC Bridges dept list (RUB 9)
+20,Saidapet Bazaar Road Subway,,13.0189,80.2215,,GCC,GCC Bridges dept list (RUB 14); replaces Korattur (not in GCC list)
+21,Sundaram Point Subway,,13.1012,80.2934,,UNVERIFIED (likely Highways),Not in GCC list; named in Fengal 2024 closures
+22,CB Road Subway,C.P. Road; Loyola (Choolaimedu),13.0212398,80.2230648,,UNVERIFIED (likely Highways),Not in GCC list; named in Michaung 2023 closures
