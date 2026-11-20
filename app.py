@@ -13,6 +13,7 @@ from streamlit_folium import st_folium
 
 from src.engine import get_action_sheet, get_pump_table, get_triggers, score
 from src.rain import get_forecast
+from src.replay import EVENT_OPTIONS, evaluate_event
 
 # ----------------------------------------------------------------------
 # Page Setup
@@ -212,8 +213,59 @@ with tab_actions:
 # TAB 3: Replay
 # ----------------------------------------------------------------------
 with tab_replay:
-    st.subheader("⏪ Historical Storm Replay")
-    st.info("Historical storm replay mode (Cyclone Michaung Dec 2023, Cyclone Fengal Nov 2024). Placeholder for Round 2.")
+    st.subheader("⏪ Historical Storm Replay Evaluation")
+
+    event_keys = list(EVENT_OPTIONS.keys())
+    selected_event = st.selectbox(
+        "Select Historical Event",
+        options=event_keys,
+        format_func=lambda x: f"{x} ({EVENT_OPTIONS[x]})",
+        index=1,
+    )
+
+    eval_res = evaluate_event(selected_event)
+
+    # Metrics
+    m_col1, m_col2, m_col3 = st.columns(3)
+    m_col1.metric(
+        "🎯 Recall",
+        f"{eval_res['recall'] * 100:.0f}%",
+        f"{eval_res['matched_count']} of {eval_res['actual_count']} closed subways",
+    )
+    m_col2.metric(
+        "🔍 Precision",
+        f"{eval_res['precision'] * 100:.0f}%",
+        f"{eval_res['matched_count']} of {eval_res['predicted_count']} predicted alerts",
+    )
+    m_col3.metric(
+        "⚠️ False Alarms",
+        eval_res["false_alarms"],
+        "Predicted orange/red but not closed",
+    )
+
+    st.markdown("---")
+
+    # Side-by-side lists
+    col_pred, col_act = st.columns(2)
+
+    with col_pred:
+        st.markdown(f"#### 🚨 Predicted (Orange/Red) — {eval_res['predicted_count']}")
+        if eval_res["predicted_items"]:
+            for item in eval_res["predicted_items"]:
+                st.write(item["display"])
+        else:
+            st.info("No subways reached Orange/Red threshold.")
+
+    with col_act:
+        st.markdown(f"#### 🚧 Actually Closed/Restricted — {eval_res['actual_count']}")
+        if eval_res["actual_items"]:
+            for item in eval_res["actual_items"]:
+                st.write(item["display"])
+        else:
+            st.info("No subways were recorded as closed/restricted.")
+
+    st.markdown("---")
+    st.caption("Replay uses reanalysis-style rain and only 4 labelled events; indicative, not a validation.")
 
 # ----------------------------------------------------------------------
 # Footer
